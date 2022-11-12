@@ -31,7 +31,7 @@ const AccountComponent = ({ user }) => {
                                 <img src='/assets/1.png' />
                             </div>
                         </div>
-                        <h4 className='text-white'  >{user.name}</h4>
+                        <h4 className='text-white'  >{user?.name}</h4>
                         <button className='btn btn-danger' onClick={e => logout()}>Logout</button>
 
                     </div>

@@ -6,8 +6,8 @@ export function randomNum() {
 export function randomNum2() {
     return Math.floor(10 + Math.random() * 90);
 }
-// export const baseURL = "http://localhost:5000"
-export const baseURL = "https://meme-backend-api.herokuapp.com"
+export const baseURL = "http://localhost:5000"
+// export const baseURL = "https://meme-backend-api.herokuapp.com"
 export const logout = () => {
     window.localStorage.removeItem("authToken")
     toast.success("Logout Success !!!")
@@ -18,6 +18,8 @@ export const logout = () => {
 
 
 export const utilActiveDB = {
+    roundStarted: "roundStarted",
+    image: "image",
     video: "video",
     color: 'color',
     gif: 'gif',

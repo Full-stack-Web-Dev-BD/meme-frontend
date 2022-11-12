@@ -81,12 +81,11 @@
   }
 
   .playing_tool {
-    flex-wrap: wrap;
     justify-content: space-around;
   }
 
   .pl_icon_box {
-    margin: 10px 0;
+    margin: 10px 5px;
   }
 
   .player_name {
@@ -161,10 +160,12 @@
     padding: 0px 36px 0 6px;
     font-size: 16px;
   }
+
   .dc_egg {
     bottom: 20px;
     padding: 0 20px 0 0;
   }
+
   .dc_egg span {
     font-size: 22px;
   }
@@ -173,7 +174,8 @@
     width: 26px;
     height: 30px;
   }
-  .dc_egg_layout{
+
+  .dc_egg_layout {
     padding-right: 10px;
   }
 }

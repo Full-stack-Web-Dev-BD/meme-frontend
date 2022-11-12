@@ -43,7 +43,7 @@ const Account = () => {
                     <img src='/assets/1.png' />
                   </div>
                 </div>
-                <h2  > {getAppState.user.name} </h2>
+                <h2  > {getAppState.user?.name} </h2>
               </div>
               <button className="nav-link active" id="v-pills-home-tab" data-bs-toggle="pill" data-bs-target="#v-pills-home" type="button" role="tab" aria-controls="v-pills-home" aria-selected="true">Account</button>
               <button className="nav-link" id="v-pills-profile-tab" data-bs-toggle="pill" data-bs-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="false">Dashboard</button>

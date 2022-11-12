@@ -24,7 +24,7 @@ const DashboardChat = ({ state, sendSMS }) => {
                   <img src='/assets/1.png' />
                 </div>
               </div>
-              <h2> {getAppState.user.name} </h2>
+              <h2> {getAppState.user?.name} </h2>
               <div className='user_dropdown'>
                 <ul>
                   <li>Log Out</li>

@@ -7,7 +7,8 @@ import socketIOClient from 'socket.io-client'
 import "./dashboard.css"
 import { baseURL } from '../../utils/constant';
 import axios from 'axios'
-
+import jwtDecode from 'jwt-decode';
+import { toast } from 'react-toastify';
 var socket
 export class Dashboard extends Component {
   state = {
@@ -18,9 +19,11 @@ export class Dashboard extends Component {
     room: '',
     userID: '',
     roomDetails: {},
-    topic: ''
+    topic: '',
+    socketIO: ''
   }
   async componentDidMount() {
+    var user = jwtDecode(window.localStorage.getItem("authToken"))
     const { name, room, topic } = queryString.parse(window.location.search);
     if (!name || !room) return window.location.href = '/'
     this.setState({ ...this.state, name: name, room: room, topic: topic })
@@ -28,13 +31,13 @@ export class Dashboard extends Component {
     var dbChatHistory = await axios.get(`${baseURL}/api/chat/${room}`)
     await this.setState({ ...this.state, chatHistory: [...dbChatHistory.data] })
     socket = socketIOClient(baseURL, { transports: ['websocket', 'polling', 'flashsocket'] })
-    socket.emit('join', { name, room, topic }, async (error) => {
+    this.setState({ ...this.state, socketIO: socket })
+    socket.emit('join', { name, room, topic, owner: user._id }, async (error) => {
       if (error) {
         this.setState({ ...this.state, error: error });
       }
     });
     socket.on("message", async (data) => {
-      console.log(this.state)
       if (!this.state.userID) {
         this.setState({ ...this.state, uid: data.sms.uid, chatHistory: [...this.state.chatHistory, { sms: data.sms }] })
         this.getRoom()
@@ -45,6 +48,13 @@ export class Dashboard extends Component {
     })
     socket.on('roomUpdate', data => {
       this.setState({ ...this.state, roomDetails: data.room })
+    })
+    socket.on("roundPushBack", data => {
+      console.log("A New Room created")
+      toast.success("A new Round Created , Refrashing Page to get Update !!")
+      setTimeout(() => {
+        window.location.reload()
+      }, 1500);
     })
   }
   getRoom = () => {
@@ -67,7 +77,7 @@ export class Dashboard extends Component {
           <DashboardSidebar state={this.state} />
         </div>
         <div className='dashboard_main_content'>
-          <DashboardMainContent state={this.state} />
+          <DashboardMainContent state={this.state} socket={socket} />
         </div>
         <div className='dashboard_chat'>
           <DashboardChat sendSMS={this.sendSms} state={this.state} />
