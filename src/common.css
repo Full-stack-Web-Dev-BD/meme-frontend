@@ -158,6 +158,12 @@
     width: 50px;
 }
 
+.text_yellow {
+    color: #f9af12;
+    font-size: 18px;
+    font-weight: 700;
+}
+
 .pl_white::-webkit-input-placeholder {
     /* Chrome/Opera/Safari */
     color: white;

@@ -40,16 +40,17 @@ const DashboardSidebar = ({ state }) => {
                                     <img src={`/assets/${i + 1}.png`} />
                                 </div>
                                 <h4 className='player_name'> {pert.userName}    </h4>
-                                <div className='p_egg'>
+                                {/* <div className='p_egg'>
                                     <div className='p_egg_count'>
                                         <img src='/assets/RottenEgg.png' />
-                                        <span>{randomNum2()} </span>
+                                        <span>{pert.balance?.paidEsterEggs} </span>
+                                        {console.log(pert)}
                                     </div>
                                     <div className='p_egg_count'>
                                         <img src='/assets/EasterEgg.png' />
-                                        <span> {randomNum2()} </span>
+                                        <span> {pert.balance?.paidRottenEggs} </span>
                                     </div>
-                                </div>
+                                </div> */}
                             </div>
                         ))
                     }

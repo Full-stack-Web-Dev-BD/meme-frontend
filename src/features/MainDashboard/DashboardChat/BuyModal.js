@@ -1,7 +1,5 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 
 const style = {
@@ -16,19 +14,18 @@ const style = {
     p: 4,
 };
 
-export default function CreateRoundModal({ roundCreateFN, roundNumber }) {
-    const [time, setTime] = React.useState(1);
+export default function BuyModal({ roundCreateFN, roundNumber }) {
+    const [time, setTime] = React.useState(false);
     const [open, setOpen] = React.useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
-
     const submitHandler = (e) => {
         e.preventDefault()
         roundCreateFN(time)
     }
     return (
         <div>
-            <button onClick={handleOpen} className='btn  yellow_btn ' >Create Round {roundNumber} </button>
+            <button onClick={handleOpen} className='btn  btn-block ' >Cheer to Win ! </button>
             <Modal
                 open={open}
                 onClose={handleClose}
@@ -37,8 +34,19 @@ export default function CreateRoundModal({ roundCreateFN, roundNumber }) {
             >
                 <Box sx={style}>
                     <div>
-                        <h5 className='text-center'>Create a New Round</h5>
+                        <h5 className='text-center'>Buy Eggs</h5>
                         <form>
+                            <form>
+                                <h6>Paid</h6>
+                                <div className='mb-3'>
+                                    <label>Ester Eggs</label>
+                                    <input className='form-control' placeholder='Enter Amount (Min-0 ) ' />
+                                </div>
+                                <div>
+                                    <label>Ester Eggs</label>
+                                    <input className='form-control' placeholder='Enter Amount (Min-0) ' />
+                                </div>
+                            </form>
                             <div>
                                 <label>Round Time</label>
                                 <input className='form-control' value={time} onChange={e => setTime(e.target.value)} required type="number" placeholder='Enter  Session Time (Minutes) ' />

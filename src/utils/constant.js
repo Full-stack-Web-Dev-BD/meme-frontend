@@ -18,6 +18,7 @@ export const logout = () => {
 
 
 export const utilActiveDB = {
+    showMEME: "showMEME",
     roundStarted: "roundStarted",
     image: "image",
     video: "video",

@@ -13,7 +13,9 @@ import { appState } from '../../../states/appState';
 import jwtDecode, { } from 'jwt-decode'
 import { useRecoilState } from 'recoil';
 import queryString from 'query-string'
+import VoteModal from './VoteModal';
 const DashboardMainContent = ({ state }) => {
+  const slideTime = 20
   const [getAppState, setAppState] = useRecoilState(appState)
   const [selectHistory, setSelectHistory] = useState({
     images: [],
@@ -23,52 +25,19 @@ const DashboardMainContent = ({ state }) => {
     video: ''
   })
   const [activeRound, setActiveRound] = useState({})
+  const [allFiles, setAllFiles] = useState([])
   const [allRound, setAllRound] = useState([])
+  const [file, setFile] = useState({})
+  const [memeUploaded, setMemeUploaded] = useState()
   const [vImage1, setVImage1] = useState()
-  const [activeDB, setActiveDB] = useState("waiting")
+  const [activeDB, setActiveDB] = useState(utilActiveDB.waiting)
   const [tokenUser, setTokenUser] = useState({})
   const [myRoom, setMyRoom] = useState({})
   const [selectedGrid, setSelectedGrid] = useState()
   const [selectedInput, setSelectedInput] = useState("")
   const [selectedColor, setSelectedColor] = useState("")
-  const [colors, setColors] = useState([
-    `#ae${randomNum()}`,
-    `#be${randomNum()}`,
-    `#ce${randomNum()}`,
-    `#de${randomNum()}`,
-    `#ee${randomNum()}`,
-    `#aa${randomNum()}`,
-    `#ab${randomNum()}`,
-    `#ac${randomNum()}`,
-    `#ad${randomNum()}`,
-    `#cc${randomNum()}`,
-    `#ca${randomNum()}`,
-    `#cd${randomNum()}`,
-    `#dc${randomNum()}`,
-  ])
-  const [gif, setGif] = useState([
-    "https://i.gifer.com/ApRO.gif",
-    "https://www.icegif.com/wp-content/uploads/among-us-icegif-53.gif",
-    "https://github.blog/wp-content/uploads/2020/12/game-off-pulse.gif?fit=1200%2C630",
-    "https://media.tenor.com/mM4X7jIQtxsAAAAC/fun-play.gif",
-    "https://media.tenor.com/pw9ZsUdsEYgAAAAj/capoo-blue-cat.gif",
-    "https://i.pinimg.com/originals/e5/07/10/e507101e74bf1a3d3a4051359765462f.gif"
-  ])
-  const [images, setImages] = useState([
-    "https://images.squarespace-cdn.com/content/v1/609df99e9252a310ee83fb29/757efbdc-f767-4c7f-ade5-dd48dfe8db03/zeedz-jobs.png",
-    "https://news.artnet.com/app/news-upload/2021/12/Niftynaut.jpg",
-    "https://i.pinimg.com/564x/ea/d4/4c/ead44cf05a01aeb2fff226a30051a69d.jpg",
-    "https://mir-s3-cdn-cf.behance.net/project_modules/disp/ad55b5129002333.6161ca5983d3b.jpg",
-    "https://i.pinimg.com/564x/7d/c6/d3/7dc6d3cb0a27dcf3ad0648d38911031e.jpg",
-    "https://miro.medium.com/max/500/1*RjEqKbwshVsl7poyV3UlnA.jpeg",
-  ])
-  const [video, setVideo] = useState([
-    "https://www.youtube.com/watch?v=i5qH9jjsNas",
-    "https://www.youtube.com/watch?v=p_Fiqoe4tA8",
-    "https://www.youtube.com/watch?v=cTKZF3lE_2Q",
-    "https://www.youtube.com/watch?v=G1txwF6YsuM",
-    "https://www.youtube.com/watch?v=xferGuozl4c"
-  ])
+  const [activeMeme, setActiveMEME] = useState({})
+  const [fileName, setFileName] = useState()
 
   useEffect(() => {
     var tokenuser = jwtDecode(window.localStorage.getItem("authToken"))
@@ -77,20 +46,64 @@ const DashboardMainContent = ({ state }) => {
     getAllRound()
     getMyRoom()
     isRoundExpired()
+    getAllFiles()
   }, [])
+  const getAllFiles = () => {
+    axios.get(`${baseURL}/files`)
+      .then(resp => {
+        setAllFiles(resp.data)
+      })
+  }
   const getActiveRound = () => {
     var tokenuser = jwtDecode(window.localStorage.getItem("authToken"))
     var params = queryString.parse(window.location.href)
-    console.log(tokenuser, params)
     axios.get(`${baseURL}/api/room/${params.room}`)
       .then(res => {
-        console.log(res)
         if (res.data?.owner == tokenuser._id) { //owner test
           axios.get(`${baseURL}/api/round/active-round/${tokenuser._id}`)
             .then(resp => {
               setActiveRound(resp.data)
               if (resp.data.status) {
                 setActiveDB(utilActiveDB.roundStarted)
+                var diff = getDiff(resp.data)
+                setTimeout(() => {
+                  axios.get(`${baseURL}/api/round/${resp.data.round._id}`)
+                    .then(res => {
+                      var currentMEME = 0
+                      setActiveDB(utilActiveDB.voting)
+                      var memeInterval = setInterval(() => {
+                        if (res.data.perticipants[currentMEME]) {
+                          setActiveMEME(res.data.perticipants[currentMEME])
+                          setActiveDB(utilActiveDB.showMEME)
+                          currentMEME += 1;
+                        } else {
+                          console.log("cleare interval")
+                          clearInterval(memeInterval)
+                          axios.get(`${baseURL}/api/round/${resp.data.round._id}`)
+                            .then(rs => {
+                              var perticipants = rs.data.perticipants
+                              var winner = perticipants[0]
+                              for (var i = 0; i < perticipants.length; i++) {
+                                var winnerTotalEggs = winner.vote.paidEsterEggsCount + winner.vote.paidRottenEggsCount
+                                var thisTotalEggs = perticipants[i].vote.paidEsterEggsCount + perticipants[i].vote.paidRottenEggsCount
+                                if (thisTotalEggs > winnerTotalEggs) {
+                                  winner = perticipants[i]
+                                }
+                              }
+                              console.log("Winner is ", winner)
+                              axios.post(`${baseURL}/api/round/winner/${resp.data.round._id}`, { winner: winner })
+                                .then(r => {
+                                  toast.success("Winner Detected !!")
+                                  setActiveMEME(winner)
+                                  setActiveDB(utilActiveDB.winner_result)
+                                })
+                            })
+                          // Detect Winner Now 
+                        }
+                      }, slideTime * 1000);
+                    })
+                    .catch(err => { console.log(err) })
+                }, diff);
               }
             })
             .catch(err => {
@@ -102,6 +115,42 @@ const DashboardMainContent = ({ state }) => {
               setActiveRound(resp.data)
               if (resp.data.status) {
                 setActiveDB(utilActiveDB.roundStarted)
+                var diff = getDiff(resp.data)
+                setTimeout(() => {
+                  axios.get(`${baseURL}/api/round/${resp.data.round._id}`)
+                    .then(res => {
+                      var currentMEME = 0
+                      var memeInterval = setInterval(() => {
+                        if (res.data.perticipants[currentMEME]) {
+                          setActiveMEME(res.data.perticipants[currentMEME])
+                          setActiveDB(utilActiveDB.showMEME)
+                          currentMEME += 1;
+                        } else {
+                          clearInterval(memeInterval)
+                          axios.get(`${baseURL}/api/round/${resp.data.round._id}`)
+                            .then(rs => {
+                              var perticipants = rs.data.perticipants
+                              var winner = perticipants[0]
+                              for (var i = 0; i < perticipants.length; i++) {
+                                var winnerTotalEggs = winner.vote.paidEsterEggsCount + winner.vote.paidRottenEggsCount
+                                var thisTotalEggs = perticipants[i].vote.paidEsterEggsCount + perticipants[i].vote.paidRottenEggsCount
+                                if (thisTotalEggs > winnerTotalEggs) {
+                                  winner = perticipants[i]
+                                }
+                              }
+                              axios.post(`${baseURL}/api/round/winner/${resp.data.round._id}`, { winner: winner })
+                                .then(r => {
+                                  toast.success("Winner Detected !!")
+                                  setActiveMEME(winner)
+                                  setActiveDB(utilActiveDB.winner_result)
+                                })
+                            })
+                          // Detect Winner Now 
+                        }
+                      }, slideTime * 1000);
+                    })
+                    .catch(err => { console.log(err) })
+                }, diff);
               }
             })
             .catch(err => {
@@ -123,7 +172,6 @@ const DashboardMainContent = ({ state }) => {
           console.log(err)
         })
     } else {
-
       axios.get(`${baseURL}/api/round/all/${myRoom.owner}`)
         .then(resp => {
           setAllRound(resp.data)
@@ -184,8 +232,7 @@ const DashboardMainContent = ({ state }) => {
       })
   }
   const getDiff = (acRound) => {
-    console.log(acRound)
-    var diffMS = moment(acRound.round.expTime).diff(new Date(), 'milliseconds') // 0
+    var diffMS = moment(acRound.round?.expTime).diff(new Date(), 'milliseconds') // 0
     if (diffMS < 0) {
       return 0
     } else {
@@ -193,7 +240,6 @@ const DashboardMainContent = ({ state }) => {
     }
   }
   const isRoomOwner = () => {
-    // console.log(myRoom.owner == tokenUser._id)
     return myRoom.owner == tokenUser._id
   }
   const isRoundExpired = () => {
@@ -206,6 +252,82 @@ const DashboardMainContent = ({ state }) => {
       return false
     }
   }
+  const memeUpload = () => {
+    if (!activeRound.status) return toast.error("No active Round")
+    if (!isRoundExpired()) return toast.error("Round  Expired ")
+    if (file.size) {
+      var formdata = new FormData()
+      console.log(activeRound)
+      formdata.append("file", file)
+      formdata.append("userID", tokenUser._id)
+      formdata.append("roundID", activeRound.round._id)
+      formdata.append("user", JSON.stringify(tokenUser))
+      axios.post(`${baseURL}/api/round/upload`, formdata)
+        .then(resp => {
+          if (resp.data?.status) {
+            setMemeUploaded(resp.data.file)
+            toast.success(resp.data.message)
+          } else {
+            toast.error(resp.data.message)
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    } else {
+      var obj = {
+        fileName: file.name,
+        userID: tokenUser._id,
+        roundID: activeRound.round._id,
+        user: JSON.stringify(tokenUser)
+      }
+      axios.post(`${baseURL}/api/round/upload`, obj)
+        .then(resp => {
+          if (resp.data?.status) {
+            setMemeUploaded(resp.data.file)
+            toast.success(resp.data.message)
+          } else {
+            toast.error(resp.data.message)
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    }
+  }
+
+  const doVote = (obj) => {
+    obj.userID = tokenUser._id
+    obj.id = activeRound.round._id
+
+    axios.post(`${baseURL}/api/round/vote`, obj)
+      .then(resp => {
+        console.log(resp)
+        if (resp.data.status) {
+          toast.success(resp.data.message)
+        } else {
+          Object.keys(resp.data.error).map(el => {
+            toast.error(resp.data.error[el])
+          })
+        }
+      })
+      .catch(err => {
+        console.log(err)
+      })
+  }
+  const detectFileType = (str) => {
+    var fileName = str.split(".")
+    if (fileName[1] == "png" || fileName[1] == "jpg" || fileName[1] == "jpeg") {
+      return "png"
+    }
+    if (fileName[1] == "mp4") {
+      return "mp4"
+    }
+    if (fileName[1] == "gif") {
+      return "gif"
+    }
+  }
+
   return (
     <div className='dashboard_main_content_inner' >
       {
@@ -237,7 +359,6 @@ const DashboardMainContent = ({ state }) => {
                           <Countdown date={Date.now() + getDiff(activeRound)} renderer={renderer} /> :
                           <span> Waiting  for New Round </span>
                       }
-
                     </div>
                 }
               </span>
@@ -249,7 +370,6 @@ const DashboardMainContent = ({ state }) => {
       }
       <div className='db_playing_box_top'>
         <div className='db_dynamic_content'>
-
           {
             activeDB == utilActiveDB.image ?
               <div className='selected_img'>
@@ -257,43 +377,41 @@ const DashboardMainContent = ({ state }) => {
                   {/* <span>X</span> */}
                 </div>
                 <div className='selected_img_img'>
-                  <div className='s_img_box'>
-                    <img style={{ width: "200px" }} src={selectHistory.img} />
-                  </div>
+                  {
+                    file.size ?
+                      <div className='s_img_box'>
+                        {
+                          memeUploaded ?
+                            <>
+                              {
+                                detectFileType(memeUploaded) == "gif" || detectFileType(memeUploaded) == "png" ?
+                                  <img style={{ width: '241px' }} src={`${baseURL}/${memeUploaded}`} /> : ''
+                              }
+
+                              {
+                                detectFileType(memeUploaded) == "mp4" ?
+                                  <video style={{ width: '240px' }} src={`${baseURL}/${memeUploaded}`} /> : ''
+                              }
+                            </> :
+                            <p className='text_yellow' >{file.name} </p>
+                        }
+                      </div> :
+                      <div className='s_img_box'>
+                        {
+                          detectFileType(file.name) == "gif" || detectFileType(file.name) == "png" ?
+                            <img style={{ width: '120px' }} src={`${baseURL}/${file.name}`} /> : ''
+                        }
+                        {
+                          detectFileType(file.name) == "mp4" ?
+                            <video style={{ width: '240px' }} controls src={`${baseURL}/${file.name}`} /> : ''
+                        }
+                      </div>
+                  }
                   <div className=' text-center'>
-                    <button className='btn yellow_btn'>Upload</button>
+                    <button className='btn yellow_btn' onClick={e => memeUpload()} >Upload MEME</button>
                   </div>
                 </div>
               </div> : ''
-          }
-
-          {
-            activeDB == utilActiveDB.gif ?
-              <div className='selected_img'>
-                <div className='selected_img_x'>
-                  {/* <span>X</span> */}
-                </div>
-                <div className='selected_img_img'>
-                  <div className='s_img_box'>
-                    <img style={{ width: "200px" }} src={selectHistory.gif} />
-                  </div>
-                  <div className=' text-center'>
-                    <button className='btn yellow_btn'>Upload</button>
-                  </div>
-                </div>
-              </div> : ''
-          }
-
-          {
-            activeDB == utilActiveDB.video ?
-              <div className='text-center mt-4'>
-                <iframe width="300" height="200" src={`https://www.youtube.com/embed/${getVideoId(selectHistory.video).id}`} title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
-                <div className=' text-center'>
-                  <button className='btn yellow_btn'>Upload</button>
-                </div>
-              </div>
-              : ''
           }
           {
             activeDB == utilActiveDB.waiting ?
@@ -310,6 +428,32 @@ const DashboardMainContent = ({ state }) => {
                 </div>
               </div> : ''
           }
+
+          {
+            activeDB == utilActiveDB.showMEME ?
+              <div>
+                <div>
+                  <ProfileBox name={activeMeme.user?.name} />
+                </div>
+                <div className='meme_wrapper'>
+                  {
+                    detectFileType(activeMeme.meme) == "png" || detectFileType(activeMeme.meme) == "gif" ?
+                      <img style={{ width: '250px' }} src={`${baseURL}/${activeMeme.meme}`} /> : ''
+                  }
+                  {
+                    detectFileType(activeMeme.meme) == "mp4" ?
+                      <video style={{ width: "200px" }} src={`${baseURL}/${activeMeme.meme}`} />
+                      : ''
+                  }
+                  {
+                    activeMeme.roundID ?
+                      <div>
+                        <VoteModal activeMeme={activeMeme} doVote={doVote} />
+                      </div> : ''
+                  }
+                </div>
+              </div> : ''
+          }
           {
             activeDB == utilActiveDB.topic ?
               <div className='db_waiting' >
@@ -320,19 +464,7 @@ const DashboardMainContent = ({ state }) => {
           {
             activeDB == utilActiveDB.voting ?
               <div>
-                <div>
-                  <div className='acc_nav_holder'>
-                    <div className='account_nav d-flex' >
-                      <div className='pn_profile_box' >
-                        <div className='pn_profile_circle'></div>
-                        <div className='pn_profile_img'>
-                          <img src='/assets/1.png' />
-                        </div>
-                      </div>
-                      <h2>User Name</h2>
-                    </div>
-                  </div>
-                </div>
+                <h5 className='text-center mt-4'> Be ready to vote your  favorite MEME , It will Start soonn !! </h5>
               </div> : ''
           }
           {
@@ -390,231 +522,237 @@ const DashboardMainContent = ({ state }) => {
               </div> : ''
           }
           {
-            activeDB == utilActiveDB.round_winner ?
-              <div className=' r_winner text-center'>
-                <h3> the winner of this round is</h3>
-                <div>
-                  <span>MEME</span>
-                </div>
-                <br />
-                <button className='btn yellow_btn mt-2'>Next Game</button>
-              </div> : ''
-          }
-          {
             activeDB == utilActiveDB.winner_result ?
               <div className=' winner_r text-center'>
-                <h3> the winner of this Game is</h3>
                 <div className='text-center'>
-                  <ProfileBox name={"Player 1"} />
+                  <ProfileBox smName={true} name={`${activeMeme.user.name} (Round Winner) `} />
+                  {/* <img style={{ width: '200px' }} src={`${baseURL}/${activeMeme.meme}`} /> */}
+                  {
+                    detectFileType(activeMeme.meme) == "png" || detectFileType(activeMeme.meme) == "gif" ?
+                      <img style={{ marginTop: '5px', width: '251px' }} src={`${baseURL}/${activeMeme.meme}`} /> : ''
+                  }
+                  {
+                    detectFileType(activeMeme.meme) == "mp4" ?
+                      <video controls style={{ width: "202px", marginTop: '5px' }} src={`${baseURL}/${activeMeme.meme}`} />
+                      : ''
+                  }
                 </div>
                 <br />
-                <button className='btn yellow_btn mt-2'>Next Game</button>
+                <button onClick={e => window.location.reload()} className='btn yellow_btn mt-1'>Next Game</button>
               </div> : ''
           }
         </div>
       </div>
 
       {/* bottom side */}
-      {
-        isRoundExpired() ?
-          <div className='db_playing_box_bottom'>
-            <div className='pb_icons d-flex'>
-              <div className='pb_icon_box mr-3'>
-                <img src='/assets/eraser.svg' />
-              </div>
-              <div className='pb_icon_box'>
-                <img src='/assets/text.svg' />
-              </div>
-            </div>
-            <div className='playing_tool_box mt-4'>
-              <div className='tool_box_inner'>
-                <div className='playing_tools mr-5'>
-                  <div className='playing_tool d-flex '>
-                    <div className={`pl_icon_box ${selectedInput == utilSelectedInput.img ? 'active_pl_icon_box' : ''}`} onClick={e => setSelectedInput(utilSelectedInput.img)} >
-                      <img src='/assets/image.svg' />
-                    </div>
-                    <div className={`pl_icon_box ${selectedInput == utilSelectedInput.gif ? 'active_pl_icon_box' : ''}`} onClick={e => setSelectedInput(utilSelectedInput.gif)}>
-                      <img src='/assets/gif.svg' />
-                    </div>
-                    <div className={`pl_icon_box ${selectedInput == utilSelectedInput.video ? 'active_pl_icon_box' : ''}`} onClick={e => setSelectedInput(utilSelectedInput.video)}>
-                      <img src='/assets/video.svg' />
-                    </div>
-                    {/* <div className={`pl_icon_box ${selectedInput == utilSelectedInput.layout ? 'active_pl_icon_box' : ''}`} onClick={e => setSelectedInput(utilSelectedInput.layout)}>
+      <div className='db_playing_box_bottom'>
+        <div className='pb_icons d-flex'>
+          <div className='pb_icon_box mr-3'>
+            <img src='/assets/eraser.svg' />
+          </div>
+          <div className='pb_icon_box'>
+            <img src='/assets/text.svg' />
+          </div>
+        </div>
+        <div className='playing_tool_box mt-4'>
+          <div className='tool_box_inner'>
+            <div className='playing_tools mr-5'>
+              <div className='playing_tool d-flex '>
+                <div className={`pl_icon_box ${selectedInput == utilSelectedInput.img ? 'active_pl_icon_box' : ''}`} onClick={e => setSelectedInput(utilSelectedInput.img)} >
+                  <img src='/assets/image.svg' />
+                </div>
+                <div className={`pl_icon_box ${selectedInput == utilSelectedInput.gif ? 'active_pl_icon_box' : ''}`} onClick={e => setSelectedInput(utilSelectedInput.gif)}>
+                  <img src='/assets/gif.svg' />
+                </div>
+                <div className={`pl_icon_box ${selectedInput == utilSelectedInput.video ? 'active_pl_icon_box' : ''}`} onClick={e => setSelectedInput(utilSelectedInput.video)}>
+                  <img src='/assets/video.svg' />
+                </div>
+                {/* <div className={`pl_icon_box ${selectedInput == utilSelectedInput.layout ? 'active_pl_icon_box' : ''}`} onClick={e => setSelectedInput(utilSelectedInput.layout)}>
                   <img src='/assets/layout.svg' />
                 </div>
                 <div className={`pl_icon_box ${selectedInput == utilSelectedInput.color ? 'active_pl_icon_box' : ''}`} onClick={e => setSelectedInput(utilSelectedInput.color)}>
                   <img src='/assets/pencil.svg' />
                 </div> */}
-                    {/* <div className={`pl_icon_box`}>
+                {/* <div className={`pl_icon_box`}>
                   <img src='/assets/y_ok.png' style={{ borderRadius: '8px' }} />
                 </div> */}
-                  </div>
-                </div>
-                <div className='playing_input '>
-
+              </div>
+            </div>
+            <div className='playing_input '>
+              {
+                activeDB == "round_winner" ?
+                  <div className='_overlay'></div> : ''
+              }
+              <div className='input_show' style={{
+                height: selectedInput == utilSelectedInput.player ? "inherit" : "150px"
+              }}>
+                <div className='input_components pt-2'>
                   {
-                    activeDB == "round_winner" ?
-                      <div className='_overlay'></div> : ''
+                    selectedInput == utilSelectedInput.img ?
+                      <div>
+                        <div className='input_img_container'>
+                          <div className='sr-only' >
+                            <input onChange={e => { setFile(e.target.files[0]); setActiveDB(utilActiveDB.image); }} type={'file'} accept="image/x-png,image/jpeg" id="image_selector" />
+                          </div>
+                          <div title='Select Image' onClick={e => document.getElementById("image_selector").click()} className='img_placeholder c_pointer'>
+                            <img src='/assets/select_image.png' />
+                          </div>
+                          {
+                            allFiles.map(el => (
+                              <>
+                                {
+                                  detectFileType(el) == "png" ?
+                                    <div onClick={e => { setFile({ name: el }); setActiveDB(utilActiveDB.image) }} key={el} className='img_placeholder c_pointer'>
+                                      <img src={`${baseURL}/${el}`} />
+                                    </div> : ''
+                                }
+                              </>
+                            ))
+                          }
+                        </div>
+                      </div> : ''
                   }
-                  <div className='input_show' style={{
-                    height: selectedInput == utilSelectedInput.player ? "inherit" : "150px"
-                  }}>
-                    <div className='input_components pt-2'>
-                      {
-                        selectedInput == utilSelectedInput.img ?
-                          <div>
-                            <div className='input_img_container'>
-                              <div className='sr-only' >
-                                <input type={'file'} accept="image/x-png,image/jpeg" id="image_selector" />
-                              </div>
-                              <div title='Select Image' onClick={e => document.getElementById("image_selector").click()} className='img_placeholder c_pointer'>
-                                <img src='/assets/select_image.png' />
-                              </div>
-                              {
-                                images.map(el => (
-                                  <>
-                                    <div key={el} title='Grab Image' onClick={e => { setVImage1("imgURL"); addImage(el); setSelectHistory({ ...selectHistory, img: el }); setActiveDB(utilActiveDB.image) }} className='img_placeholder c_pointer'>
-                                      <img src={`${el}`} />
-                                    </div>
-                                  </>
-                                ))
-                              }
-                            </div>
-                          </div> : ''
-                      }
 
-                      {
-                        selectedInput == utilSelectedInput.gif ?
-                          <div>
-                            <div className='input_img_container'>
-                              <div className='sr-only' >
-                                <input type={'file'} accept="image/gif," id="select_gif" />
-                              </div>
-                              <div title='Select Image' onClick={e => document.getElementById("select_gif").click()} className='img_placeholder c_pointer'>
-                                <img src='/assets/select_image.png' />
-                              </div>
-                              {
-                                gif.map(el => (
-                                  <div key={el} onClick={e => { setSelectHistory({ ...selectHistory, gif: el }); setActiveDB(utilActiveDB.gif) }} className='c_p img_placeholder'>
-                                    <img src={el} />
-                                  </div>
-                                ))
-                              }
-                            </div>
-                          </div> : ''
-                      }
-
-                      {
-                        selectedInput == utilSelectedInput.video ?
-                          <div>
-                            <div className='input_img_container'>
-                              <div className='sr-only' >
-                                <input type={'file'} accept="video/mp4" id="select_video" />
-                              </div>
-                              <div title='Select Image' onClick={e => document.getElementById("select_video").click()} className='img_placeholder c_pointer'>
-                                <img src='/assets/select_image.png' />
-                              </div>
-                              {
-                                video.map(el => (
-                                  <div onClick={e => { { setSelectHistory({ ...selectHistory, video: el }); setActiveDB(utilActiveDB.video) } }} key={el} className=' c_p img_placeholder' >
-                                    <div className='text-center'>
-                                      <img src={`https://img.youtube.com/vi/${getVideoId(el).id}/0.jpg`} />
-                                    </div>
-                                  </div>
-                                ))
-                              }
-                            </div>
-                          </div> : ''
-                      }
-                      {
-                        selectedInput == utilSelectedInput.color ?
-                          <div>
-                            <div className='placeholder_container'>
-                              {
-                                colors.map((el, i) => (
-                                  <div key={el} className='c_p color_placeholder  ' onClick={e => { setSelectedColor(`img${i}`); setSelectHistory({ ...selectHistory, color: el }); setActiveDB(utilActiveDB.color) }} style={{ background: el }}>
-                                    <div className='img' style={{
-                                      display: selectedColor == `img${i}` ? 'block' : 'none'
-                                    }} >
-                                      <img src='/assets/ok.svg' />
-                                    </div>
-                                  </div>
-                                ))
-                              }
-                            </div>
-                          </div> : ''
-                      }
-                      {/* layout */}
-                      {
-                        selectedInput == utilSelectedInput.layout ?
-                          <div className='input_grid'>
-                            <div className='v_grid c_p' onClick={e => setActiveDB(utilActiveDB.v_single)}>
-                              <div style={{ background: activeDB == "v_single" ? "#f9af12" : 'black' }} className='v_single' >
-                                <span>1</span>
-                              </div>
-                              <div style={{ background: activeDB == "v_single" ? "#f9af12" : 'black' }} className='v_single' >
-                                <span>2</span>
-                              </div>
-                            </div>
-                            <div className='h_grid c_p'>
-                              <div style={{ background: activeDB == "h_single" ? "#f9af12" : 'black' }} className='h_single ' >
-                                <span>1</span>
-                              </div>
-                              <div style={{ background: activeDB == "h_single" ? "#f9af12" : 'black' }} className='h_single  ' >
-                                <span>2</span>
-                              </div>
-                            </div>
-                            <div className='h_3_grid c_p'>
-                              <div style={{ background: activeDB == "h_single_3bar" ? "#f9af12" : 'black' }} className='h_single ' >
-                                <span>1</span>
-                              </div>
-                              <div style={{ background: activeDB == "h_single_3bar" ? "#f9af12" : 'black' }} className='h_single ' >
-                                <span>2</span>
-                              </div>
-                              <div style={{ background: activeDB == "h_single_3bar" ? "#f9af12" : 'black' }} className='h_single ' >
-                                <span>3</span>
-                              </div>
-                            </div>
-                          </div> : ''
-                      }
-                      {
-                        selectedInput == utilSelectedInput.player ?
-                          <div className='through_eggs'>
-                            <div className='_eggs'>
-                              <div className='t_egg_1'>
-                                <img src='/assets/RottenEgg.png' />
-                              </div>
-                              <div className='t_egg_2'>
-                                <img src='/assets/EasterEgg.png' />
-                                <span>5s</span>
-                              </div>
-                            </div>
-                            <h3>Through your eggs</h3>
-                          </div> : ''
-                      }
-                    </div>
-                  </div>
                   {
-                    selectedInput != utilSelectedInput.player ?
-                      <div className='p_search_bar'>
-                        <div>
-                          <div className='p_upload'>
-                            <img src='/assets/upload.svg' />
+                    selectedInput == utilSelectedInput.gif ?
+                      <div>
+                        <div className='input_img_container'>
+                          <div className='sr-only' >
+                            <input type={'file'} onChange={e => { setFile(e.target.files[0]); setActiveDB(utilActiveDB.image) }} accept="image/gif," id="select_gif" />
+                          </div>
+                          <div title='Select Image' onClick={e => document.getElementById("select_gif").click()} className='img_placeholder c_pointer'>
+                            <img src='/assets/select_image.png' />
+                          </div>
+                          {
+                            allFiles.map(el => (
+                              <>
+                                {
+                                  detectFileType(el) == "gif" ?
+                                    <div onClick={e => { setFile({ name: el }); setActiveDB(utilActiveDB.image) }} key={el} className='c_p img_placeholder'>
+                                      <img src={`${baseURL}/${el}`} />
+                                    </div> : ''
+                                }
+                              </>
+                            ))
+                          }
+                        </div>
+                      </div> : ''
+                  }
+                  {
+                    selectedInput == utilSelectedInput.video ?
+                      <div>
+                        <div className='input_img_container'>
+                          <div className='sr-only' >
+                            <input type={'file'} onChange={e => { setFile(e.target.files[0]); setActiveDB(utilActiveDB.image) }} accept="video/mp4" id="select_video" />
+                          </div>
+                          <div title='Select Image' onClick={e => document.getElementById("select_video").click()} className='img_placeholder c_pointer'>
+                            <img src='/assets/select_image.png' />
+                          </div>
+                          {
+                            allFiles.map(el => (
+                              <>
+                                {
+                                  detectFileType(el) == "mp4" ?
+                                    <div onClick={e => { setFile({ name: el }); setActiveDB(utilActiveDB.image) }} key={el} className=' c_p img_placeholder' >
+                                      <div className='text-center'>
+                                        <img src={`/assets/video.svg`} />
+                                      </div>
+                                    </div> : ''
+                                }
+                              </>
+                            ))
+                          }
+                        </div>
+                      </div> : ''
+                  }
+                  {
+                    selectedInput == utilSelectedInput.color ?
+                      <div>
+                        <div className='placeholder_container'>
+                          {
+                            ["colors"].map((el, i) => (
+                              <div key={el} className='c_p color_placeholder  ' onClick={e => { setSelectedColor(`img${i}`); setSelectHistory({ ...selectHistory, color: el }); setActiveDB(utilActiveDB.color) }} style={{ background: el }}>
+                                <div className='img' style={{
+                                  display: selectedColor == `img${i}` ? 'block' : 'none'
+                                }} >
+                                  <img src='/assets/ok.svg' />
+                                </div>
+                              </div>
+                            ))
+                          }
+                        </div>
+                      </div> : ''
+                  }
+                  {/* layout */}
+                  {
+                    selectedInput == utilSelectedInput.layout ?
+                      <div className='input_grid'>
+                        <div className='v_grid c_p' onClick={e => setActiveDB(utilActiveDB.v_single)}>
+                          <div style={{ background: activeDB == "v_single" ? "#f9af12" : 'black' }} className='v_single' >
+                            <span>1</span>
+                          </div>
+                          <div style={{ background: activeDB == "v_single" ? "#f9af12" : 'black' }} className='v_single' >
+                            <span>2</span>
                           </div>
                         </div>
-                        <div className='input_grup'>
-                          <span className='ps_icon'>
-                            <SearchOutlinedIcon />
-                          </span>
-                          <input className='form-control' />
+                        <div className='h_grid c_p'>
+                          <div style={{ background: activeDB == "h_single" ? "#f9af12" : 'black' }} className='h_single ' >
+                            <span>1</span>
+                          </div>
+                          <div style={{ background: activeDB == "h_single" ? "#f9af12" : 'black' }} className='h_single  ' >
+                            <span>2</span>
+                          </div>
                         </div>
+                        <div className='h_3_grid c_p'>
+                          <div style={{ background: activeDB == "h_single_3bar" ? "#f9af12" : 'black' }} className='h_single ' >
+                            <span>1</span>
+                          </div>
+                          <div style={{ background: activeDB == "h_single_3bar" ? "#f9af12" : 'black' }} className='h_single ' >
+                            <span>2</span>
+                          </div>
+                          <div style={{ background: activeDB == "h_single_3bar" ? "#f9af12" : 'black' }} className='h_single ' >
+                            <span>3</span>
+                          </div>
+                        </div>
+                      </div> : ''
+                  }
+                  {
+                    selectedInput == utilSelectedInput.player ?
+                      <div className='through_eggs'>
+                        <div className='_eggs'>
+                          <div className='t_egg_1'>
+                            <img src='/assets/RottenEgg.png' />
+                          </div>
+                          <div className='t_egg_2'>
+                            <img src='/assets/EasterEgg.png' />
+                            <span>5s</span>
+                          </div>
+                        </div>
+                        <h3>Through your eggs</h3>
                       </div> : ''
                   }
                 </div>
               </div>
+              {
+                selectedInput != utilSelectedInput.player ?
+                  <div className='p_search_bar'>
+                    <div>
+                      <div className='p_upload'>
+                        <img src='/assets/upload.svg' />
+                      </div>
+                    </div>
+                    <div className='input_grup'>
+                      <span className='ps_icon'>
+                        <SearchOutlinedIcon />
+                      </span>
+                      <input className='form-control' />
+                    </div>
+                  </div> : ''
+              }
             </div>
-          </div> : ''
-      }
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

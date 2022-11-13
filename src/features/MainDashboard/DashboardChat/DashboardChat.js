@@ -3,6 +3,7 @@ import "./dashboardChat.css"
 import SendIcon from '@mui/icons-material/Send';
 import { appState } from '../../../states/appState';
 import { useRecoilState } from 'recoil';
+import BuyModal from './BuyModal';
 
 const DashboardChat = ({ state, sendSMS }) => {
   const [getAppState, setAppState] = useRecoilState(appState)
@@ -57,9 +58,9 @@ const DashboardChat = ({ state, sendSMS }) => {
           <div className='dc_egg'>
             <div className='dc_egg_layout' >
               <div className='ec_egg_container'>
-                <span>0</span>
+                <span> {getAppState.user.balance.paidEsterEggs} </span>
                 <img src='/assets/EasterEgg.png' />
-                <span>0</span>
+                <span> {getAppState.user.balance.paidRottenEggs} </span>
                 <img src='/assets/rottenEgg.png' />
               </div>
             </div>
@@ -72,7 +73,7 @@ const DashboardChat = ({ state, sendSMS }) => {
                   </span>
                 </form>
               </div>
-              <button className='btn btn-block'>Cheer to Win !</button>
+              <BuyModal />
             </div>
           </div>
         </div>
