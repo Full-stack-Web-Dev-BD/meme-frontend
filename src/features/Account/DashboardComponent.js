@@ -1,32 +1,43 @@
-import React, { useState } from 'react'
-import { randomNum } from '../../utils/constant'
+import React, { useEffect, useState } from 'react'
+import { baseURL, randomNum } from '../../utils/constant'
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import { appState } from '../../states/appState';
 import { useRecoilState } from 'recoil';
+import axios from 'axios';
 const DashboardComponent = () => {
-    const [selectedRoom, setSelectedRoom] = useState()
     const [getAppState, setAppState] = useRecoilState(appState)
-    const [players, setPlayers] = useState([
-        { name: 'Player 1', rottenEgg: randomNum(), esterEgg: randomNum(), vote: randomNum() },
-        { name: 'Player 1', rottenEgg: randomNum(), esterEgg: randomNum(), vote: randomNum() },
-        { name: 'Player 1', rottenEgg: randomNum(), esterEgg: randomNum(), vote: randomNum() },
-        { name: 'Player 1', rottenEgg: randomNum(), esterEgg: randomNum(), vote: randomNum() },
-        { name: 'Player 1', rottenEgg: randomNum(), esterEgg: randomNum(), vote: randomNum() },
-        { name: 'Player 1', rottenEgg: randomNum(), esterEgg: randomNum(), vote: randomNum() },
-        { name: 'Player 1', rottenEgg: randomNum(), esterEgg: randomNum(), vote: randomNum() },
-    ])
+    const [totalGame, setTotalGame] = useState(0)
+    const [round, setRound] = useState([])
+    useEffect(() => {
+
+        axios.get(`${baseURL}/api/round/totalround`)
+            .then(res => {
+                console.log(res)
+                setTotalGame(res.data?.total)
+            })
+    }, [])
+
+    const fetchRound = (roomID) => {
+        var owner = getAppState.rooms[roomID].owner
+        if (!owner) return 0;
+        axios.get(`${baseURL}/api/round/all/${owner}`)
+            .then(resp => {
+                setRound(resp.data)
+            })
+
+    }
     return (
         <div>
             <div className='dashboard_component'>
                 <div className='account_sidebar_tab_content acc_sidebar_content_db'>
                     <div className='p-4'>
                         <div className='room_selector'>
-                            <select onChange={e => setSelectedRoom(e.target.value)} >
+                            <select onChange={e => fetchRound(e.target.value)} >
                                 <option style={{ color: 'gray' }} value="">Name of the room</option>
                                 {
-                                    getAppState.rooms.map(room => {
+                                    getAppState.rooms.map((room, i) => {
                                         return (
-                                            <option style={{ color: 'gray' }} value={room.roomName} >{room.roomName}  </option>
+                                            <option style={{ color: 'gray' }} value={i} >{room.roomName}  </option>
                                         )
                                     })
                                 }
@@ -51,7 +62,7 @@ const DashboardComponent = () => {
                             </div>
                         </div>
                         <div className='player_table'>
-                            <div>
+                            <div style={{ height: "300px", overflowY: 'scroll' }} className="hide_sc">
                                 <table className="table table-bordered">
                                     <thead>
                                         <tr>
@@ -64,17 +75,17 @@ const DashboardComponent = () => {
                                             <th>
                                                 <img style={{ width: '30px' }} src='/assets/EasterEgg.png' />
                                             </th>
-                                            <th>Votes Recived</th>
+                                            {/* <th>Votes Recived</th> */}
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {
-                                            players.map((el, i) => (
+                                            round.map((el, i) => (
                                                 <tr key={i} >
-                                                    <td className=''> {el.name} </td>
-                                                    <td className='text-center'> {el.rottenEgg} </td>
-                                                    <td className='text-center'> {el.esterEgg} </td>
-                                                    <td className='text-center'> {el.vote} </td>
+                                                    <td className=''> {el.winner?.user.name} </td>
+                                                    <td className='text-center'> {el.winner?.vote.paidEsterEggsCount} </td>
+                                                    <td className='text-center'> {el.winner?.vote.paidRottenEggsCount} </td>
+                                                    {/* <td className='text-center'> {el.vote} </td> */}
                                                 </tr>
                                             ))
                                         }
@@ -88,7 +99,7 @@ const DashboardComponent = () => {
                     <div className='total_status'>
                         <div className='total_count total_games'>
                             <h4>Total Games</h4>
-                            <h5> <img src='/assets/eggs.png' /> {randomNum()} </h5>
+                            <h5> <img src='/assets/eggs.png' /> {totalGame} </h5>
                         </div>
                         <div className='total_count total_visitor'>
                             <h4>Total Visitor</h4>

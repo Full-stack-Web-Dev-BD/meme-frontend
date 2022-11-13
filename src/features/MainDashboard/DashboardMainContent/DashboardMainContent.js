@@ -15,7 +15,7 @@ import { useRecoilState } from 'recoil';
 import queryString from 'query-string'
 import VoteModal from './VoteModal';
 const DashboardMainContent = ({ state }) => {
-  const slideTime = 20
+  const slideTime = 10
   const [getAppState, setAppState] = useRecoilState(appState)
   const [selectHistory, setSelectHistory] = useState({
     images: [],
@@ -29,7 +29,6 @@ const DashboardMainContent = ({ state }) => {
   const [allRound, setAllRound] = useState([])
   const [file, setFile] = useState({})
   const [memeUploaded, setMemeUploaded] = useState()
-  const [vImage1, setVImage1] = useState()
   const [activeDB, setActiveDB] = useState(utilActiveDB.waiting)
   const [tokenUser, setTokenUser] = useState({})
   const [myRoom, setMyRoom] = useState({})
@@ -37,10 +36,9 @@ const DashboardMainContent = ({ state }) => {
   const [selectedInput, setSelectedInput] = useState("")
   const [selectedColor, setSelectedColor] = useState("")
   const [activeMeme, setActiveMEME] = useState({})
-  const [fileName, setFileName] = useState()
 
   useEffect(() => {
-    var tokenuser = jwtDecode(window.localStorage.getItem("authToken"))
+    var tokenuser = jwtDecode(window.localStorage.getItem("meme_token"))
     setTokenUser(tokenuser)
     getActiveRound()
     getAllRound()
@@ -55,7 +53,7 @@ const DashboardMainContent = ({ state }) => {
       })
   }
   const getActiveRound = () => {
-    var tokenuser = jwtDecode(window.localStorage.getItem("authToken"))
+    var tokenuser = jwtDecode(window.localStorage.getItem("meme_token"))
     var params = queryString.parse(window.location.href)
     axios.get(`${baseURL}/api/room/${params.room}`)
       .then(res => {

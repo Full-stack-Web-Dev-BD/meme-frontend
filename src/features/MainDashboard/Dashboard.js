@@ -23,7 +23,7 @@ export class Dashboard extends Component {
     socketIO: ''
   }
   async componentDidMount() {
-    var user = jwtDecode(window.localStorage.getItem("authToken"))
+    var user = jwtDecode(window.localStorage.getItem("meme_token"))
     const { name, room, topic } = queryString.parse(window.location.search);
     if (!name || !room) return window.location.href = '/'
     this.setState({ ...this.state, name: name, room: room, topic: topic })

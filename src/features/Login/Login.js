@@ -25,7 +25,7 @@ const Login = () => {
                 setTimeout(() => {
                     window.location.href = "/home"
                 }, 2000);
-                window.localStorage.setItem("authToken", res.data.token)
+                window.localStorage.setItem("meme_token", res.data.token)
                 toast.success("Login Success , Redirecting to Account !")
             })
             .catch(err => {
