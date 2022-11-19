@@ -4,8 +4,6 @@ import {
   BrowserRouter,
   Routes,
   Route,
-  redirect,
-  Navigate
 } from "react-router-dom";
 import { ToastContainer } from 'react-toastify';
 import Home from './features/Home/Home';
@@ -21,10 +19,23 @@ import { useRecoilState } from 'recoil';
 import { appState } from './states/appState';
 import axios from 'axios';
 import { baseURL } from './utils/constant';
+import Success from './features/PaymentSuccess/Success';
 function App() {
   const [user, setuser] = useState()
   const [getAppState, setAppState] = useRecoilState(appState)
-
+  const [sdkReady, setSdkReady] = useState()
+  const addPayPalScript = () => {
+    const script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src =
+      "https://www.paypal.com/sdk/js?client-id=AfL71Os0rSlpfxnxaLFuEhruTkFv8yZjsRLPAhMm5SgAyQ3zMlysyVFBBhcFcaDM5txRGGgxAPyXKmL5&intent=authorize";
+    //script.src = "https://www.paypal.com/sdk/js";
+    script.async = true;
+    script.onload = () => {
+      setSdkReady(true);
+    };
+    document.body.appendChild(script);
+  };
   useEffect(() => {
     setuser(getUserFromToken())
     if (getUserFromToken()) {
@@ -38,6 +49,12 @@ function App() {
         })
     } else {
       setAppState({ ...getAppState, loaded: true })
+    }
+    if (!window.paypal) {
+      addPayPalScript();
+      setSdkReady(true);
+    } else {
+      setSdkReady(true);
     }
   }, [])
   return (
@@ -55,6 +72,7 @@ function App() {
                 user ?
                   <>
                     {/* <Route path="/topic" element={<Topic />} /> */}
+                    <Route path="/success" element={<Success />} />
                     <Route path="/home" element={<Home />} />
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/account" element={<Account />} />
