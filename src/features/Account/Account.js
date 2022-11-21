@@ -13,6 +13,7 @@ const Account = () => {
   const [getAppState, setAppState] = useRecoilState(appState)
   const [sidebarToggle, setSidebarToggle] = useState(false)
   useEffect(() => {
+    console.log(getAppState)
     if (window.innerWidth > 767) {
       setSidebarToggle(true)
     }
@@ -46,8 +47,14 @@ const Account = () => {
                 <h2  > {getAppState.user?.name} </h2>
               </div>
               <button className="nav-link active" id="v-pills-home-tab" data-bs-toggle="pill" data-bs-target="#v-pills-home" type="button" role="tab" aria-controls="v-pills-home" aria-selected="true">Account</button>
-              <button className="nav-link" id="v-pills-profile-tab" data-bs-toggle="pill" data-bs-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="false">Dashboard</button>
-              <button className="nav-link" id="v-pills-map-tab" data-bs-toggle="pill" data-bs-target="#v-pills-map" type="button" role="tab" aria-controls="v-pills-map" aria-selected="false">Map</button>
+              {console.log(getAppState.user.userType)}
+              {
+                getAppState.user.userType == "admin" ?
+                  <>
+                    <button className="nav-link" id="v-pills-profile-tab" data-bs-toggle="pill" data-bs-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="false">Dashboard</button>
+                    <button className="nav-link" id="v-pills-map-tab" data-bs-toggle="pill" data-bs-target="#v-pills-map" type="button" role="tab" aria-controls="v-pills-map" aria-selected="false">Map</button>
+                  </> : ''
+              }
               <div className='sidebar_play_btn text-center mt-5'>
                 <Link to="/home">
                   <button className='btn y_btn yellow_btn mb-4'   >Play</button>
