@@ -86,12 +86,12 @@ export default function BuyModal() {
                                     <div>
                                         <div className='mb-3 d-flex' style={{ justifyContent: 'space-between' }}>
                                             <span style={{ textAlign: "center", display: 'flex' }}  >
-                                                <img style={{ width: '22px', height: '28px' }} src='/assets/rottenEgg.png' />
-                                                <h4 className='ml-1'>10</h4>
+                                                <img style={{ width: '22px', height: '28px' }} src='/assets/ester.png' />
+                                                <h4 className='ml-1'>{pack1.esterEggs}</h4>
                                             </span>
                                             <span style={{ textAlign: "center", display: 'flex' }} >
                                                 <img src='/assets/EasterEgg.png' style={{ width: '22px', height: '28px' }} />
-                                                <h4 className='ml-1'>5</h4>
+                                                <h4 className='ml-1'>{pack1.rottenEggs}  </h4>
                                             </span>
                                             <button className='btn yellow_btn p-0 pl-2 pr-2' onClick={e => { checkout(pack1) }} > Select Pack ( 5$ ) </button>
                                         </div>
@@ -99,12 +99,12 @@ export default function BuyModal() {
                                     <div className=' mt-4'>
                                         <div className='mb-3 d-flex' style={{ justifyContent: 'space-between' }}>
                                             <span style={{ textAlign: "center", display: 'flex' }}  >
-                                                <img style={{ width: '22px', height: '28px' }} src='/assets/rottenEgg.png' />
-                                                <h4 className='ml-1'>10</h4>
+                                                <img style={{ width: '22px', height: '28px' }} src='/assets/rotten.png' />
+                                                <h4 className='ml-1'>{pack2.esterEggs}</h4>
                                             </span>
                                             <span style={{ textAlign: "center", display: 'flex' }} >
                                                 <img src='/assets/EasterEgg.png' style={{ width: '22px', height: '28px' }} />
-                                                <h4 className='ml-1'>5</h4>
+                                                <h4 className='ml-1'> {pack2.rottenEggs} </h4>
                                             </span>
                                             <button className='btn yellow_btn p-0 pl-2 pr-2 ' onClick={e => setPack(pack2)}> Select Pack ( 7$ ) </button>
                                         </div>

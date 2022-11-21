@@ -59,9 +59,9 @@ const DashboardChat = ({ state, sendSMS }) => {
             <div className='dc_egg_layout' >
               <div className='ec_egg_container'>
                 <span> {getAppState.user.balance.paidEsterEggs} </span>
-                <img src='/assets/EasterEgg.png' />
+                <img src='/assets/ester.png' />
                 <span> {getAppState.user.balance.paidRottenEggs} </span>
-                <img src='/assets/rottenEgg.png' />
+                <img src='/assets/rotten.png' />
               </div>
             </div>
             <div className='dc_chat_box'>
