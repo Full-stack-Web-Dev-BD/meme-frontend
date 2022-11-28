@@ -87,7 +87,7 @@ const AccountComponent = ({ user }) => {
                                             {
                                                 allLang.map(el => {
                                                     return (
-                                                        <option value={el.name}> {el.name} </option>
+                                                        <option key={el.code} value={el.name}> {el.name} </option>
                                                     )
                                                 })
                                             }

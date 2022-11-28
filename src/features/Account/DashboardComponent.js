@@ -12,7 +12,6 @@ const DashboardComponent = () => {
 
         axios.get(`${baseURL}/api/round/totalround`)
             .then(res => {
-                console.log(res)
                 setTotalGame(res.data?.total)
             })
     }, [])
@@ -37,7 +36,7 @@ const DashboardComponent = () => {
                                 {
                                     getAppState.rooms.map((room, i) => {
                                         return (
-                                            <option style={{ color: 'gray' }} value={i} >{room.roomName}  </option>
+                                            <option key={i} style={{ color: 'gray' }} value={i} >{room.roomName}  </option>
                                         )
                                     })
                                 }

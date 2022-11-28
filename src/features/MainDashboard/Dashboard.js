@@ -51,7 +51,6 @@ export class Dashboard extends Component {
       this.setState({ ...this.state, roomDetails: data.room })
     })
     socket.on("roundPushBack", data => {
-      console.log("A New Room created")
       toast.success("A new Round Created , Refrashing Page to get Update !!")
       setTimeout(() => {
         window.location.reload()
@@ -60,7 +59,6 @@ export class Dashboard extends Component {
     setTimeout(() => {
       axios.get(`${baseURL}/api/room/${room}`)
         .then(roomResp => {
-          console.log(roomResp)
         })
     }, 2000);
   }

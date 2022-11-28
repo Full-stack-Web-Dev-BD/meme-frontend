@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { randomNum2 } from '../../../utils/constant'
 import "./dashboardSidebar.css"
 import VolumeUpIcon from '@mui/icons-material/VolumeUpOutlined';
@@ -23,6 +23,12 @@ const DashboardSidebar = ({ state }) => {
         }
         setActivePl(playerID)
     }
+    useEffect(() => {
+
+        window.addEventListener("beforeunload", function (event) {
+            event.returnValue = ""
+        });
+    }, [])
     return (
         <div className='dashboard_sidebar_inner'>
             <div className='sidebar_top'>

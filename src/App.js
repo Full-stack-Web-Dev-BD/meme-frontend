@@ -24,7 +24,6 @@ function App() {
   const [user, setuser] = useState()
   const [getAppState, setAppState] = useRecoilState(appState)
   useEffect(() => {
-    window.addEventListener("beforeunload", unloadCallback);
     setuser(getUserFromToken())
     if (getUserFromToken()) {
       axios.get(`${baseURL}/api/user/find/${getUserFromToken()._id}`)

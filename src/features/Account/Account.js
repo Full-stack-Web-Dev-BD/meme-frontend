@@ -13,7 +13,6 @@ const Account = () => {
   const [getAppState, setAppState] = useRecoilState(appState)
   const [sidebarToggle, setSidebarToggle] = useState(false)
   useEffect(() => {
-    console.log(getAppState)
     if (window.innerWidth > 767) {
       setSidebarToggle(true)
     }
@@ -27,14 +26,14 @@ const Account = () => {
             {
               !sidebarToggle ?
                 <div className='acc_sidebar_toggle p-0' onClick={e => setSidebarToggle(!sidebarToggle)}>
-                  <i class="las la-bars"></i>
+                  <i className="las la-bars"></i>
                 </div> : ''
             }
             <div style={{ display: sidebarToggle ? "block" : "none" }} className="nav flex-column nav-pills me-3 account_sidebar scrollbar-hidden" id="v-pills-tab" role="tablist" aria-orientation="vertical">
               {
                 sidebarToggle ?
                   <div className='acc_sidebar_toggle_hide' onClick={e => setSidebarToggle(!sidebarToggle)}>
-                    <i class="las la-times"></i>
+                    <i className="las la-times"></i>
                   </div> : ''
               }
               <div className='p-4  account_sidebar_top' >
@@ -47,7 +46,6 @@ const Account = () => {
                 <h2  > {getAppState.user?.name} </h2>
               </div>
               <button className="nav-link active" id="v-pills-home-tab" data-bs-toggle="pill" data-bs-target="#v-pills-home" type="button" role="tab" aria-controls="v-pills-home" aria-selected="true">Account</button>
-              {console.log(getAppState.user.userType)}
               {
                 getAppState.user.userType == "admin" ?
                   <>
@@ -79,7 +77,7 @@ const Account = () => {
         </div>
       </div>
       <Footer />
-    </div>
+    </div >
   )
 }
 
