@@ -30,6 +30,7 @@ export class Dashboard extends Component {
 
     var dbChatHistory = await axios.get(`${baseURL}/api/chat/${room}`)
     await this.setState({ ...this.state, chatHistory: [...dbChatHistory.data] })
+
     socket = socketIOClient(baseURL, { transports: ['websocket', 'polling', 'flashsocket'] })
     this.setState({ ...this.state, socketIO: socket })
     socket.emit('join', { name, room, topic, owner: user._id }, async (error) => {
@@ -56,6 +57,12 @@ export class Dashboard extends Component {
         window.location.reload()
       }, 1500);
     })
+    setTimeout(() => {
+      axios.get(`${baseURL}/api/room/${room}`)
+        .then(roomResp => {
+          console.log(roomResp)
+        })
+    }, 2000);
   }
   getRoom = () => {
     axios.post(`${baseURL}/api/room/find`, { roomName: this.state.room })

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Footer from '../Components/Footer/Footer'
 import Header from '../Components/Header/PageHeader'
 import { toast } from 'react-toastify'
@@ -14,12 +14,20 @@ const Register = () => {
   const [name, setName] = useState()
   const [email, setEmail] = useState()
   const [password, setPassword] = useState()
+  const [country, setCountry] = useState()
+  useEffect(() => {
+    axios.get('https://ipgeolocation.abstractapi.com/v1/?api_key=aca13a5d9cbf4f219a47a8a4a6c6b119')
+      .then(resp => {
+        setCountry(resp.data?.country)
+      })
+  }, [])
   const submitHandler = (e) => {
     e.preventDefault()
     axios.post(`${baseURL}/api/user/register`, {
       name: name,
       email: email,
       password: password,
+      country
     })
       .then(res => {
         toast.success("Registration Success ")

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import "./dashboardChat.css"
 import SendIcon from '@mui/icons-material/Send';
 import { appState } from '../../../states/appState';
@@ -13,6 +13,11 @@ const DashboardChat = ({ state, sendSMS }) => {
     sendSMS(Sms);
     setSms('')
   }
+  // useEffect(() => {
+  //   window.onbeforeunload = function (event) {
+  //     return window.confirm("Confirm refresh");
+  //   };
+  // }, [])
   return (
     <div className='dashboard_chat_inner'>
       <div className='profile_bar'>

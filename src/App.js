@@ -23,20 +23,8 @@ import Success from './features/PaymentSuccess/Success';
 function App() {
   const [user, setuser] = useState()
   const [getAppState, setAppState] = useRecoilState(appState)
-  const [sdkReady, setSdkReady] = useState()
-  const addPayPalScript = () => {
-    const script = document.createElement("script");
-    script.type = "text/javascript";
-    script.src =
-      "https://www.paypal.com/sdk/js?client-id=AfL71Os0rSlpfxnxaLFuEhruTkFv8yZjsRLPAhMm5SgAyQ3zMlysyVFBBhcFcaDM5txRGGgxAPyXKmL5&intent=authorize";
-    //script.src = "https://www.paypal.com/sdk/js";
-    script.async = true;
-    script.onload = () => {
-      setSdkReady(true);
-    };
-    document.body.appendChild(script);
-  };
   useEffect(() => {
+    window.addEventListener("beforeunload", unloadCallback);
     setuser(getUserFromToken())
     if (getUserFromToken()) {
       axios.get(`${baseURL}/api/user/find/${getUserFromToken()._id}`)
@@ -50,12 +38,7 @@ function App() {
     } else {
       setAppState({ ...getAppState, loaded: true })
     }
-    if (!window.paypal) {
-      addPayPalScript();
-      setSdkReady(true);
-    } else {
-      setSdkReady(true);
-    }
+
   }, [])
   return (
     <div className="App">

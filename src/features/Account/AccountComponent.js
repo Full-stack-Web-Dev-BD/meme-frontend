@@ -1,15 +1,24 @@
 import axios from 'axios'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
-import { baseURL, logout } from '../../utils/constant'
+import { allLang, baseURL, logout } from '../../utils/constant'
 
 const AccountComponent = ({ user }) => {
     const [country, setCountry] = useState()
+    const [name, setName] = useState()
+    const [email, setEmail] = useState()
     const [city, setCity] = useState()
     const [language, setLanguage] = useState()
+    useEffect(() => {
+        setCountry(user.country)
+        setName(user.name)
+        setEmail(user.email)
+        setCity(user.city)
+        setLanguage(user.language)
+    }, [])
     const submitHandler = (e) => {
         e.preventDefault()
-        var udpatedUser = { ...user, country, city, language }
+        var udpatedUser = { ...user, country, city, language, name, email }
         axios.post(`${baseURL}/api/user/update-user`, udpatedUser)
             .then(resp => {
                 console.log(resp)
@@ -40,71 +49,52 @@ const AccountComponent = ({ user }) => {
                             <div className='fs_20'>
                                 <label>Name</label>
                                 <div>
-                                    <input className='form-control ' value={user.name} disabled placeholder='Name of the uesr' />
+                                    <input onChange={e => setName(e.target.value)} style={{ color: 'gray' }} className='form-control ' value={name} placeholder='Name of the uesr' />
                                 </div>
 
                             </div>
                             <div className='mt-lg-4 mt-sm-2 fs_20'>
                                 <label>E-mail</label>
-                                <input className='form-control' disabled value={user.email} placeholder='user@gmail.com' />
+                                <input onChange={e => setEmail(e.target.value)} style={{ color: 'gray' }} className='form-control' value={email} placeholder='Email' />
                             </div>
-                            <div className='mt-lg-4 mt-sm-2'>
+                            <div className='mt-lg-4 mt-sm-2 pb-5'>
                                 <div className='flex_content_between '>
                                     <label className='fs_24' >Country</label>
                                     {
                                         user.country ?
                                             <div className='account_select_item w-70p'>
-                                                <input className='form-control ' disabled value={user.country} placeholder='user@gmail.com' />
+                                                <input className='form-control ' disabled value={country} placeholder='user@gmail.com' />
                                             </div> :
                                             <div className='account_select_item w-70p'>
-                                                <select value={user.country} onChange={e => setCountry(e.target.value)} className='form-control'>
-                                                    <option value=""> Country </option>
-                                                    <option value={"United States of America"}>United States of America</option>
-                                                    <option value={"India"}>India</option>
-                                                    <option value={"Bangladesh"}>Bangladesh</option>
-                                                </select>
+                                                <div className='account_select_item w-70p'>
+                                                    <input onChange={e => setCountry(e.target.value)} className='form-control ' value={country} placeholder='user@gmail.com' />
+                                                </div>
                                             </div>
                                     }
                                 </div>
                                 <div className='flex_content_between mb-lg-4 mb-sm-2  mt-lg-4 mt-sm-2 '>
                                     <label className='fs_24' >City</label>
-                                    {
-                                        user.city ?
-                                            <div className='account_select_item w-70p'>
-                                                <input className='form-control ' disabled value={user.city} placeholder='user@gmail.com' />
-                                            </div> :
-                                            <div className='account_select_item w-70p'>
-                                                <select onChange={e => setCity(e.target.value)} className='form-control'>
-                                                    <option value="">City</option>
-                                                    <option value={"Dhaka"} >Dhaka</option>
-                                                    <option value={"Rongpur"} >Rongpur</option>
-                                                    <option value={"Dubai"} >Dubai</option>
-                                                </select>
-                                            </div>
-                                    }
+                                    <div className='account_select_item w-70p'>
+                                        <input style={{ color: 'gray' }} className='form-control ' onChange={e => setCity(e.target.value)} value={city} placeholder='City Name' />
+                                    </div>
                                 </div>
                                 <div className='flex_content_between '>
                                     <label className='fs_24' >Language</label>
-                                    {
-                                        user.language ?
-                                            <div className='account_select_item w-70p'>
-                                                <input className='form-control ' disabled value={user.language} />
-                                            </div> :
-                                            <div className='account_select_item w-70p'>
-                                                <select onChange={e => setLanguage(e.target.value)} className='form-control'>
-                                                    <option value="">Language</option>
-                                                    <option value={"English"} >English</option>
-                                                    <option value={"Urdu"} >Urdu</option>
-                                                    <option value={"Bangla"} >Bangla</option>
-                                                </select>
-                                            </div>
-                                    }
+                                    <div className='account_select_item w-70p'>
+                                        {/* <input style={{ color: 'gray' }} onChange={e => setLanguage(e.target.value)} placeholder="Language" className='form-control ' value={language} /> */}
+                                        <select value={language} onChange={e => setLanguage(e.target.value)} className='form-control'>
+                                            <option value=""> {language} </option>
+                                            {
+                                                allLang.map(el => {
+                                                    return (
+                                                        <option value={el.name}> {el.name} </option>
+                                                    )
+                                                })
+                                            }
+                                        </select>
+                                    </div>
                                 </div>
-                                {
-                                    user.language && user.country && user.city ?
-                                        "" :
-                                        <button type='submit' className=' btn yellow_btn'> Update  Info </button>
-                                }
+                                <button type='submit' className='mt-2 btn yellow_btn'> Update  Info </button>
                             </div>
                         </form>
                     </div>
