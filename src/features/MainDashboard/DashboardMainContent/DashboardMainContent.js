@@ -183,6 +183,9 @@ const DashboardMainContent = ({ state }) => {
     var params = queryString.parse(window.location.href)
     axios.get(`${baseURL}/api/room/${params.room}`)
       .then(res => {
+        if (!res.data.date) {
+          return getMyRoom()
+        }
         setMyRoom(res.data)
       })
       .catch(err => {

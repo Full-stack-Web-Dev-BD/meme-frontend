@@ -23,6 +23,7 @@ export class Dashboard extends Component {
     socketIO: ''
   }
   async componentDidMount() {
+    console.log(new Date().getSeconds())
     var user = jwtDecode(window.localStorage.getItem("meme_token"))
     const { name, room, topic } = queryString.parse(window.location.search);
     if (!name || !room) return window.location.href = '/'
@@ -56,11 +57,6 @@ export class Dashboard extends Component {
         window.location.reload()
       }, 1500);
     })
-    setTimeout(() => {
-      axios.get(`${baseURL}/api/room/${room}`)
-        .then(roomResp => {
-        })
-    }, 2000);
   }
   getRoom = () => {
     axios.post(`${baseURL}/api/room/find`, { roomName: this.state.room })
@@ -68,7 +64,6 @@ export class Dashboard extends Component {
         this.setState({ ...this.state, roomDetails: resp.data })
       })
       .catch(err => {
-        console.log(err)
       })
   }
   sendSms = (sms) => {
