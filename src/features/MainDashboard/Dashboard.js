@@ -34,7 +34,8 @@ export class Dashboard extends Component {
 
     socket = socketIOClient(baseURL, { transports: ['websocket', 'polling', 'flashsocket'] })
     this.setState({ ...this.state, socketIO: socket })
-    socket.emit('join', { name, room, topic, owner: user._id }, async (error) => {
+    console.log("user is ", user)
+    socket.emit('join', { name, room, topic, owner: user._id, pp: user.pp }, async (error) => {
       if (error) {
         this.setState({ ...this.state, error: error });
       }

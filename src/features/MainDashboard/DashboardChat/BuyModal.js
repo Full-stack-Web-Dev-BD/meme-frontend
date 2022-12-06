@@ -35,7 +35,7 @@ export default function BuyModal() {
         packName: "Pack 1",
         esterEggs: 7,
         rottenEggs: 10,
-        price: 10
+        price: 7
 
     }
     const checkout = (p) => {
@@ -106,7 +106,7 @@ export default function BuyModal() {
                                                 <img src='/assets/EasterEgg.png' style={{ width: '22px', height: '28px' }} />
                                                 <h4 className='ml-1'> {pack2.rottenEggs} </h4>
                                             </span>
-                                            <button className='btn yellow_btn p-0 pl-2 pr-2 ' onClick={e => setPack(pack2)}> Select Pack ( 7$ ) </button>
+                                            <button className='btn yellow_btn p-0 pl-2 pr-2 ' onClick={e => checkout(pack2)}> Select Pack ( 7$ ) </button>
                                         </div>
                                     </div>
                                 </div>

@@ -9,19 +9,29 @@ import "./register.css"
 import axios from 'axios'
 import { baseURL } from '../../utils/constant';
 import { Link } from 'react-router-dom';
+import { GoogleLogin } from 'react-google-login';
+import FacebookLogin from 'react-facebook-login'
+import SocialSignup from './SocialSignup';
+
+import { useLinkedIn } from 'react-linkedin-login-oauth2';
+// You can use provided image shipped by this package or using your own
+import linkedin from 'react-linkedin-login-oauth2/assets/linkedin.png';
 
 const Register = () => {
+  const clientId = '777503944063-5mssnj41ranrib5alak109bhr2h3csl7.apps.googleusercontent.com'
   const [name, setName] = useState()
   const [email, setEmail] = useState()
   const [password, setPassword] = useState()
+  const [socialModal, setSocialModal] = useState(false)
   const [country, setCountry] = useState()
+  const [user, setUser] = useState({})
   useEffect(() => {
     axios.get('https://ipgeolocation.abstractapi.com/v1/?api_key=aca13a5d9cbf4f219a47a8a4a6c6b119')
       .then(resp => {
         setCountry(resp.data?.country)
       })
   }, [])
-  const submitHandler = (e) => {
+  const submitHandler = (e) => {//register by   form 
     e.preventDefault()
     axios.post(`${baseURL}/api/user/register`, {
       name: name,
@@ -44,6 +54,57 @@ const Register = () => {
         }
       })
   }
+  const onSuccess = (sres) => {
+    var socialuser = sres.profileObj
+    axios.get(`${baseURL}/api/user/find-email/${socialuser.email}`)
+      .then(res => {
+        if (res.data == null) {
+          toast.warning("Your Account Already Exist  , Please Login ")
+          toast.info("Redirecting on Login Page ")
+          setTimeout(() => {
+            window.location.href = "/"
+          }, 2500);
+        } else {
+          socialuser.country = country
+          setUser(socialuser)
+          setSocialModal(true)
+        }
+      })
+  };
+  const onFBSuccess = (fres) => {
+    // return console.log(fres)
+    var socialuser = fres
+    axios.get(`${baseURL}/api/user/find-email/${socialuser.email}`)
+      .then(res => {
+        if (res.data == null) {
+          toast.warning("Your Account Already Exist  , Please Login ")
+          toast.info("Redirecting on Login Page ")
+          setTimeout(() => {
+            window.location.href = "/"
+          }, 2500);
+        } else {
+          socialuser.country = country
+          setUser(socialuser)
+          setSocialModal(true)
+        }
+      })
+  };
+  const onFailure = (err) => {
+    toast.error("Connection Error !!")
+  };
+
+  const { linkedInLogin } = useLinkedIn({
+    clientId: '86vhj2q7ukf83q',
+    redirectUri: `${window.location.origin}/register`, // for Next.js, you can use `${typeof window === 'object' && window.location.origin}/linkedin`
+    onSuccess: (code) => {
+      console.log(code)
+      axios.get(`https://api.linkedin.com/v2/me/${code}`)
+        .then(resp => console.log(resp))
+    },
+    onError: (error) => {
+      console.log(error);
+    },
+  });
   return (
     <div className='register_page'>
       <Header content="none" />
@@ -60,12 +121,43 @@ const Register = () => {
                 <div className='register_or'>
                   <span>OR</span>
                 </div>
-                <div className='_register'>
-                  <div className='register_login_area' >
-                    <button className='btn register_social_btn fb_login_btn'> <span><FacebookOutlinedIcon style={{ color: 'white', fontSize: '22px' }} /></span> Login With Facebook</button><br />
-                    <button className='btn register_social_btn twitter_login_btn'> <span><TwitterIcon style={{ color: 'white', fontSize: '22px' }} /></span> Login With Twitter</button><br />
-                    <button className='btn register_social_btn google_login_btn'> <span style={{ opacity: '0' }}><YouTubeIcon style={{ color: 'white', fontSize: '22px' }} /> </span>Login with Google</button><br />
-                    <p className=' text-white'>Already have account , <Link to="/" >Go to Login</Link>  </p>
+                <div className='_register '>
+                  <div className=' mt-5 text-center register_login_area' >
+                    <SocialSignup
+                      isSocialSignupModalOpen={socialModal}
+                      user={user}
+                    />
+                    <GoogleLogin
+                      clientId={clientId}
+                      buttonText="Sign Up with Google"
+                      onSuccess={e => onSuccess(e)}
+                      onFailure={e => onFailure(e)}
+                      cookiePolicy={'single_host_origin'}
+                    />
+                    <FacebookLogin
+                      appId="486721986534201"
+                      autoLoad={false}
+                      fields="name,email,picture"
+                      onClick={e => onFBSuccess(e)}
+                      callback={e => onFBSuccess(e)}
+                      icon={<FacebookOutlinedIcon style={{ color: 'white', fontSize: '22px' }} />}
+                      textButton="Signup With Facebook"
+                      size="small btn fb_btn"
+                    />
+
+                    {/* <img
+                      onClick={linkedInLogin}
+                      src={linkedin}
+                      alt="Sign in with Linked In"
+                      style={{ maxWidth: '180px', cursor: 'pointer' }}
+                    /> */}
+                    {/*  
+                    {/* 86ssuzfdrq8qeo */}
+                    {/* <button className='btn register_social_btn fb_login_btn'> <span><FacebookOutlinedIcon style={{ color: 'white', fontSize: '22px' }} /></span> Login With Facebook</button><br /> */}
+                    {/* <button className='btn register_social_btn google_login_btn'> <span style={{ opacity: '0' }}><YouTubeIcon style={{ color: 'white', fontSize: '22px' }} /> </span>Login with Google</button><br /> */}
+                    {/* <button className='btn register_social_btn twitter_login_btn'> <span><TwitterIcon style={{ color: 'white', fontSize: '22px' }} /></span> Login With Twitter</button><br /> */}
+
+                    <p className=' text-white mt-4'>Already have account , <Link to="/" >Go to Login</Link>  </p>
                   </div>
                   <div className='register_sm_or'>
                     <span>OR</span>

@@ -4,6 +4,7 @@ import SendIcon from '@mui/icons-material/Send';
 import { appState } from '../../../states/appState';
 import { useRecoilState } from 'recoil';
 import BuyModal from './BuyModal';
+import { logout } from '../../../utils/constant';
 
 const DashboardChat = ({ state, sendSMS }) => {
   const [getAppState, setAppState] = useRecoilState(appState)
@@ -13,6 +14,7 @@ const DashboardChat = ({ state, sendSMS }) => {
     sendSMS(Sms);
     setSms('')
   }
+  const [accountDialog, setAccountDialog] = useState(false)
   // useEffect(() => {
   //   window.onbeforeunload = function (event) {
   //     return window.confirm("Confirm refresh");
@@ -24,10 +26,47 @@ const DashboardChat = ({ state, sendSMS }) => {
         <div className='d-inline '>
           <div className='acc_nav_holder'>
             <div className='account_nav d-flex' >
-              <div className='pn_profile_box' >
+              {
+                accountDialog ?
+                  <div className='account_dialog'>
+                    <div className='account_info'>
+                      <p>Name : <span>{getAppState.user?.name}</span> </p>
+                      <p>Email:<span>{getAppState.user?.email}</span></p>
+                      <div className='row mt-3 egg_balance'>
+                        <div className='col-6'>
+                          <div>
+                            <p>Paid</p>
+                            <hr />
+                            <img src='/assets/EasterEgg.png' />
+                            <b> {getAppState.user.balance.paidEsterEggs} </b>
+                          </div>
+                          <div>
+                            <img src='/assets/RottenEgg.png' />
+                            <b>{getAppState.user.balance.paidRottenEggs}</b>
+                          </div>
+                        </div>
+                        <div className='col-6'>
+                          <div>
+                            <p>Free</p>
+                            <hr />
+                            <img src='/assets/RottenEgg.png' />
+                            <b>10</b>
+                          </div>
+                          <div>
+                            <img src='/assets/EasterEgg.png' />
+                            <b>10</b>
+                          </div>
+                        </div>                    </div>
+                      <button className='badge mr-3 ' onClick={e => setAccountDialog(!accountDialog)}>Close</button>
+                      <button className='badge ' onClick={e => logout()} >Logout</button>
+                    </div>
+                  </div> : ''
+              }
+              <div style={{ cursor: 'pointer' }} onClick={e => setAccountDialog(!accountDialog)} className='pn_profile_box' >
+
                 <div className='pn_profile_circle'></div>
                 <div className='pn_profile_img'>
-                  <img src='/assets/1.png' />
+                  <img src={`/assets/${getAppState.user.pp}.png`} />
                 </div>
               </div>
               <h2> {getAppState.user?.name} </h2>

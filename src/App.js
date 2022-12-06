@@ -20,9 +20,13 @@ import { appState } from './states/appState';
 import axios from 'axios';
 import { baseURL } from './utils/constant';
 import Success from './features/PaymentSuccess/Success';
+
+import { gapi } from 'gapi-script';
 function App() {
   const [user, setuser] = useState()
   const [getAppState, setAppState] = useRecoilState(appState)
+  const clientId = '777503944063-5mssnj41ranrib5alak109bhr2h3csl7.apps.googleusercontent.com'
+
   useEffect(() => {
     setuser(getUserFromToken())
     if (getUserFromToken()) {
@@ -39,6 +43,15 @@ function App() {
     }
 
   }, [])
+  useEffect(() => {
+    const initClient = () => {
+      gapi.client.init({
+        clientId: clientId,
+        scope: ''
+      });
+    };
+    gapi.load('client:auth2', initClient);
+  });
   return (
     <div className="App">
       <BrowserRouter>

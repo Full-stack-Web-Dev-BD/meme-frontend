@@ -43,7 +43,7 @@ const DashboardSidebar = ({ state }) => {
                         state.roomDetails.perticipant?.map((pert, i) => (
                             <div key={i} className='db_single_player d-flex' id={`playerID${(i + 1)}`} onClick={e => setActivePlayer('playerID' + (i + 1))}>
                                 <div className='player_pp'>
-                                    <img src={`/assets/${i + 1}.png`} />
+                                    <img src={`/assets/${pert.pp}.png`} />
                                 </div>
                                 <h4 className='player_name'> {pert.userName}    </h4>
                                 {/* <div className='p_egg'>

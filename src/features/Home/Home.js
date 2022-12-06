@@ -73,7 +73,7 @@ const Home = () => {
                     <div className='home_profile_box' >
                       <div className='home_profile_circle'></div>
                       <div className='home_profile_image'>
-                        <img src='/assets/1.png' />
+                        <img src={`/assets/${getAppState.user.pp}.png`} />
                       </div>
                     </div>
                     <form onSubmit={e => submitHandler(e)} className='home_card_form'>
