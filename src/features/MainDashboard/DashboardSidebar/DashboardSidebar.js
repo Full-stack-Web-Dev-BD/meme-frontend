@@ -1,18 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { randomNum2 } from '../../../utils/constant'
 import "./dashboardSidebar.css"
 import VolumeUpIcon from '@mui/icons-material/VolumeUpOutlined';
+import InviteModal from './InviteModal';
 
 
 const DashboardSidebar = ({ state }) => {
-    const [players, setPlayers] = useState([
-        { name: '1234567890' },
-        { name: 'Name 2' },
-        { name: 'Name 3' },
-        { name: 'Name 4' },
-        { name: 'Name 5' },
-        { name: 'Name 6' },
-    ])
     const [activePl, setActivePl] = useState('')
     function setActivePlayer(playerID) {
         if (activePl) {
@@ -37,7 +29,10 @@ const DashboardSidebar = ({ state }) => {
                 </span>
             </div>
             <div className='sidebar_wrap'>
-                <button className='btn yellow_btn'>PLAYERS</button>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <button className='btn yellow_btn'>PLAYERS</button>
+                    <InviteModal />
+                </div>
                 <div className='player_list mt-5'>
                     {
                         state.roomDetails.perticipant?.map((pert, i) => (
@@ -62,7 +57,7 @@ const DashboardSidebar = ({ state }) => {
                     }
                 </div>
             </div>
-        </div>
+        </div >
     )
 }
 

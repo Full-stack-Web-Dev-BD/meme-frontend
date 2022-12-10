@@ -83,7 +83,7 @@ const AccountComponent = ({ user }) => {
                                     <div className='account_select_item w-70p'>
                                         {/* <input style={{ color: 'gray' }} onChange={e => setLanguage(e.target.value)} placeholder="Language" className='form-control ' value={language} /> */}
                                         <select value={language} onChange={e => setLanguage(e.target.value)} className='form-control'>
-                                            <option value=""> {language} </option>
+                                            <option value=""> {language ? language : 'Select Language'} </option>
                                             {
                                                 allLang.map(el => {
                                                     return (
